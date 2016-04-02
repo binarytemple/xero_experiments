@@ -1,3 +1,6 @@
+# code take from - 
+# http://benjamintan.io/blog/2014/10/01/parsing-wikipedia-xml-dump-in-elixir-using-erlsom/ 
+
 defmodule SaxTransactionSearch  do
   defmodule SaxState do
     defstruct title: "", text: "", element_acc: ""
