@@ -8,19 +8,28 @@ defmodule XmlParsing.Mixfile do
       deps: deps ]
   end
 
-  # Configuration for the OTP application
+  #Add add :remix as a development only OTP app.
+  
   def application do
-    [mod: { XmlParsing, [] }]
+    [applications: applications(Mix.env)]
   end
+  
+  defp applications(:dev), do: applications(:all) ++ [:remix]
+  defp applications(_all), do: [:logger]
 
-  # Returns the list of dependencies in the format:
-  # { :foobar, git: "https://github.com/elixir-lang/foobar.git", tag: "0.1" }
-  #
+  ## Configuration for the OTP application
+  #def application do
+  #  [mod: { XmlParsing, [] }]
+  #end
+
   # To specify particular versions, regardless of the tag, do:
   # { :barbat, "~> 0.1", github: "elixir-lang/barbat" }
   defp deps do
     [
-    {:erlsom, "~> 1.2.1" }
+      {:erlsom, "~> 1.2.1" },
+      {:remix, "~> 0.0.1", only: :dev}
     ]
   end
+
+
 end

@@ -1,1 +1,2 @@
-%{"erlsom": {:hex, :erlsom, "1.2.1"}}
+%{"erlsom": {:hex, :erlsom, "1.2.1"},
+  "remix": {:hex, :remix, "0.0.2"}}
