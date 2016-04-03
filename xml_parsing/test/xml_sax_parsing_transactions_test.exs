@@ -5,7 +5,9 @@ use ExUnit.Case
 
   test "parsing the title out" do
 
-  SaxTransactionSearch.run(@sample_transactions)
+  this_pid = self()
+  
+  SaxTransactionSearch.run(@sample_transactions,this_pid)
 
   assert 1 == 1
   end

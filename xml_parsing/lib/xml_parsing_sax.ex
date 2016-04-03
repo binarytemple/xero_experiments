@@ -2,13 +2,27 @@
 # http://benjamintan.io/blog/2014/10/01/parsing-wikipedia-xml-dump-in-elixir-using-erlsom/ 
 
 defmodule SaxTransactionSearch  do
+
   defmodule SaxState do
     defstruct title: "", text: "", element_acc: ""
   end
 
+  defmodule Contact do
+    defstruct contact_id: "", name: ""
+  end
+
+  defmodule BankAccount do
+    defstruct account_id: "", name: ""
+  end
+
+  defmodule BankTransaction do
+    defstruct contact: "",date: "",status: "",line_amount_types: "",sub_total: "",total_tax: "",total: "",updated_date_utc: "",currency_code: "",bank_transaction_id: "",bank_account: "",is_reconciled: "",has_attachments: ""
+  end
+
   @chunk 10000 
 
-  def run(path) do
+  #@spec add(string, pid):: any()
+  def run(path,output_pid) do
     {:ok, handle} = File.open(path, [:binary])
 
     position           = 0
