@@ -17,7 +17,7 @@
       <Total>120.00</Total>
       <UpdatedDateUTC>2016-03-13T19:51:52.673</UpdatedDateUTC>
       <CurrencyCode>GBP</CurrencyCode>
-      <BankTransactionID>3c48f7de-c1b2-413b-ab8c-efb6f24bcb2b</BankTransactionID>
+      <BankTransactionID>3c48f7de-c1b2-413b-ab8c-xxxxxxxxxxx1</BankTransactionID>
       <BankAccount>
         <AccountID>xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</AccountID>
         <Name>Paypal Sample business</Name>
@@ -39,7 +39,7 @@
       <Total>120.00</Total>
       <UpdatedDateUTC>2016-03-13T19:51:52.673</UpdatedDateUTC>
       <CurrencyCode>GBP</CurrencyCode>
-      <BankTransactionID>3c48f7de-c1b2-413b-ab8c-efb6f24bcb2b</BankTransactionID>
+      <BankTransactionID>3c48f7de-c1b2-413b-ab8c-xxxxxxxxxxx2</BankTransactionID>
       <BankAccount>
         <AccountID>xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</AccountID>
         <Name>Paypal Sample business</Name>
@@ -48,6 +48,5 @@
       <IsReconciled>false</IsReconciled>
       <HasAttachments>false</HasAttachments>
     </BankTransaction>
-
-     </BankTransactions>
+  </BankTransactions>
 </Response>

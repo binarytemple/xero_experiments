@@ -184,10 +184,10 @@ defmodule SaxTransactionSearch  do
   end
   
 	def transform_bank_transaction(tag,transaction,text) do 
-		IO.puts("transform_bank_transaction #{inspect {tag,transaction,text} }")
+		# IO.puts("transform_bank_transaction #{inspect {tag,transaction,text} }")
 	
 		case tag do 
-			'Date' -> put_in transaction[:total_tax], "fooo"
+			'Date' -> put_in transaction[:date], text
 			'Status' -> put_in transaction[:status], text
 			'LineAmountTypes' -> put_in transaction[:line_amount_types], text
 			'SubTotal' -> put_in transaction[:sub_total], text
@@ -204,11 +204,19 @@ defmodule SaxTransactionSearch  do
 	end
 
 	def transform_bank_transaction_contact(tag,transaction,text) do
-		transaction
+		case tag do 
+			'ContactID' -> put_in transaction[:contact].contact_id, text
+			'Name' -> put_in transaction[:contact].name, text
+			_ -> transaction			
+		end
 	end
 
 	def transform_bank_transaction_bank_account(tag,transaction,text) do 
-		transaction
+		case tag do 
+			'AccountID' -> put_in transaction[:bank_account].account_id, text
+			'Name' ->  put_in transaction[:bank_account].name, text
+			_ -> transaction			
+		end
 	end
   
 end

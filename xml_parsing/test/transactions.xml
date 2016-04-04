@@ -26,5 +26,5 @@
       <IsReconciled>false</IsReconciled>
       <HasAttachments>false</HasAttachments>
     </BankTransaction>
-     </BankTransactions>
+  </BankTransactions>
 </Response>
