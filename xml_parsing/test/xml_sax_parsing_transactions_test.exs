@@ -1,6 +1,15 @@
 defmodule XmlParsingTransactionsTest do
 use ExUnit.Case
 
+  defp waitup() do
+    receive do 
+      state  ->
+        IO.puts "waitup - state #{inspect state}" ; state
+      after
+        4000 ->
+        IO.puts "waitup - no message in 4 seconds" ; {:error, :timeout}
+    end
+  end
 
   @sample_transactions Path.expand("test/transactions.xml")
   @sample_2_transactions Path.expand("test/transactions2.xml")
@@ -9,26 +18,16 @@ use ExUnit.Case
 
   p = self()
     #task = Task.async(fn -> SaxTransactionSearch.run(@sample_2_transactions,p,:unlimited) end)
-    #SaxTransactionSearch.run(@sample_2_transactions,p,1)
-      task=Task.async(fn -> SaxTransactionSearch.run(@sample_2_transactions,p,1) end )
+#    SaxTransactionSearch.run(@sample_2_transactions,p,2)
+	SaxTransactionSearch.run(@sample_transactions,p,2)
+    #task=Task.async(fn -> SaxTransactionSearch.run(@sample_2_transactions,p,1) end )
 
-  res = receive do 
-      state  ->
-      IO.puts :stderr, "got state #{inspect state}" ; {:ok, state}
-    after
-    4000 ->
-    IO.puts :stderr, "No message in 4 seconds" ; {:error, :timeout}
-  end
+  
+  IO.inspect(waitup())
+  # IO.inspect(waitup())
+  #IO.inspect(waitup())
 
-  res2 = receive do 
-    x -> x
-  after 4000 -> nil
-  end
-
-  task_result = Task.await(task)
-  IO.puts "result res - #{inspect res}"
-  IO.puts "result res2 - #{inspect res2}"
-  IO.puts "result task_result - #{inspect task_result}"
+  #IO.puts "result task_result - #{Task.await(task)}"
 
   assert 1 == 1
   end
