@@ -19,17 +19,21 @@ defmodule SaxTransactionSearch  do
 
   #@spec add(string, pid):: any()
   def run(path,output_pid, max \\ :unlimited) do
+
     {:ok, handle} = File.open(path, [:binary])
-
-    position           = 0
-    c_state            = {handle, position, @chunk}
-
-    :erlsom.parse_sax("", 
-                      %{:callback_pid => output_pid},
-                      &sax_event_handler/2, 
-                      [{:continuation_function, &continue_file/2, c_state}])
-
-    :ok = File.close(handle)
+    try do
+      position           = 0
+      c_state            = {handle, position, @chunk}
+      :erlsom.parse_sax("", 
+                        {output_pid, 0, nil, max},
+                        &sax_event_handler/2, 
+                        [{:continuation_function, &continue_file/2, c_state}])
+    catch
+      :max_count_reached -> {:ok}
+      other -> {:error, other}
+    after 
+      :ok = File.close(handle); {:ok}
+    end
   end
 
   def continue_file(tail, {handle, offset, chunk}) do
@@ -41,7 +45,7 @@ defmodule SaxTransactionSearch  do
     end
   end
 
-      {[C,Cs], Acc};
+      #{[C,Cs], Acc};
 
 # More events that need to be acted upon.  
 # {characters, string()}
@@ -52,33 +56,52 @@ defmodule SaxTransactionSearch  do
 #          Report the end of a CDATA section
   
   
-  def sax_event_handler({:startElement, _, 'BankTransaction', _, _}, state) do
+  def sax_event_handler({:startElement, _, 'BankTransaction', _, _}, {callback_pid,count,transaction,max_results} = state) do
     IO.puts "Hit BankTransaction #{inspect state } "
     #%SaxState{}
     #%{state| :transaction => bankTransaction() }
+    #Application.start(:iex)
+    #require IEx
+    #IEx.CLI.start
+    #IEx.pry
+    #v1=Map.put(state, :transaction, %BankTransaction{})
+    #IO.puts "v1: #{inspect v1}" 
+ 
+    #v1=Map.update(state, :count, 0, &(&1 + 1))
+    nc=count + 1  
+    {callback_pid,nc,transaction,max_results}  
+    #IO.puts "v1: #{inspect v1}" 
+    #v1 
+    #$v1
     #
-    Map.put(state, :transaction, %BankTransaction{})
-    #%{state | element_acc: ""}
+    #
+    #
   end
 
-  def sax_event_handler({:endElement, _, 'BankTransaction', _, _}, state) do
-    {output_pid,data} = state
-    IO.puts "end BankTransaction "
-    
-    #%{state | element_acc: ""}
-    #inspect(output_pid)
-    send(output_pid, ":endElement, 'BankTransaction' #{data} ")
-    {output_pid}
+  def sax_event_handler({:endElement, _, 'BankTransaction', _}, state ) do
+    IO.puts("hit :endElement BankTransaction #{inspect state}")
+    #{output_pid,data} = state
+    #IO.puts "end BankTransaction "
+    #
+    ##%{state | element_acc: ""}
+    ##inspect(output_pid)
+    #send(output_pid, ":endElement, 'BankTransaction' #{data} ")
+    #{output_pid}
+    case state do 
+      {callback_pid,count,transaction,:unlimited} -> send(callback_pid,transaction); {callback_pid,count,transaction,:unlimited} 
+      {callback_pid,count,transaction,max_results} when count < max_results -> send(callback_pid,transaction);{callback_pid,count,transaction,:unlimited} 
+      {callback_pid,count,transaction,max_results} when count >= max_results -> throw(:max_count_reached)
+    end
   end
 
   #catchall..
-  def sax_event_handler({:startElement, _, attribute, _, _}, state) do
+#  def sax_event_handler({:startElement, _, attribute, _, _}, state) do
   #IO.inspect attribute
-   state 
+#   state 
   #  %SaxState{}
   #  #IO.inspect foo
     #%{state | element_acc: ""}
-  end
+#  end
 
   #def sax_event_handler({:startElement, _, name , _, _}, _state) do
   #  %SaxState{}
@@ -99,12 +122,15 @@ defmodule SaxTransactionSearch  do
 #    state
 #  end
 
-  #def sax_event_handler(:endDocument, state) do 
-  #  IO.puts "END DOCUMENT"
-  #end
+  def sax_event_handler(:endDocument, state) do 
+    IO.puts "END DOCUMENT"
+  end
   
-  def sax_event_handler(_, state), do: state
-
+  def sax_event_handler(event, state) do 
+#    IO.puts "reached catch-all sax_event_handler #{inspect state}"
+#    IO.puts "reached catch-all sax_event_handler #{inspect event}"
+    state
+  end
 end
 
 
