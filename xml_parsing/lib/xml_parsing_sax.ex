@@ -12,7 +12,7 @@ defmodule SaxTransactionSearch  do
     end
 
     defmodule BankTransaction do
-      defstruct contact: %Contact{} , date: "",status: "",line_amount_types: "",sub_total: "",total_tax: "",total: "",updated_date_utc: "",currency_code: "",bank_transaction_id: "",bank_account: "",is_reconciled: "",has_attachments: "" 
+      defstruct contact: %Contact{} , date: "",status: "",line_amount_types: "",sub_total: "",total_tax: "",total: "",updated_date_utc: "",currency_code: "",bank_transaction_id: "",bank_account: %BankAccount{}, is_reconciled: "",has_attachments: "" 
     end
 
     @chunk 10000 
@@ -24,8 +24,10 @@ defmodule SaxTransactionSearch  do
     try do
       position           = 0
       c_state            = {handle, position, @chunk}
+
+      # state is output_pid, current_record, transaction|nil, max_records|:unlimited , current_tag|nil},
       :erlsom.parse_sax("", 
-                        {output_pid, 0, nil, max},
+                        {output_pid, 0, nil, max, nil },
                         &sax_event_handler/2, 
                         [{:continuation_function, &continue_file/2, c_state}])
     catch
@@ -45,8 +47,7 @@ defmodule SaxTransactionSearch  do
     end
   end
 
-      #{[C,Cs], Acc};
-
+#{[C,Cs], Acc};
 # More events that need to be acted upon.  
 # {characters, string()}
 #     Receive notification of character data. 
@@ -55,25 +56,25 @@ defmodule SaxTransactionSearch  do
 #      endCDATA
 #          Report the end of a CDATA section
   
-  
-  def sax_event_handler({:startElement, _, 'BankTransaction', _, _}, {callback_pid,count,transaction,max_results} = state) do
-    IO.puts "Hit BankTransaction #{inspect state } "
-    {callback_pid, 1 + count  ,transaction,max_results}  
+  def sax_event_handler({:startElement, _, 'BankTransaction', _, _}, {callback_pid,count,transaction,max_results,_} = state) do
+    #IO.puts "Hit BankTransaction #{inspect state } "
+    {callback_pid, 1 + count  , Map.from_struct(%BankTransaction{}) ,max_results, nil}  
   end
 
-  def sax_event_handler({:endElement, _, 'BankTransaction', _}, state ) do
-    IO.puts("hit :endElement BankTransaction #{inspect state}")
-    #{output_pid,data} = state
-    #IO.puts "end BankTransaction "
-    #
-    ##%{state | element_acc: ""}
-    ##inspect(output_pid)
-    #send(output_pid, ":endElement, 'BankTransaction' #{data} ")
-    #{output_pid}
+  def sax_event_handler({:startElement, _, element, _, _}, {callback_pid,count,transaction,max_results,_} = state) do
+    IO.puts "sax_event_handler - hit - #{element}"
+    {callback_pid,count,transaction,max_results,element}
+  end
+
+  def sax_event_handler({:endElement, _, 'BankTransaction', _}, {callback_pid,count,transaction,max_results,_} = state ) do
+    #IO.puts("hit :endElement BankTransaction #{inspect state}")
     case state do 
-      {callback_pid,count,transaction,:unlimited} -> send(callback_pid,state); {callback_pid,count,nil,:unlimited} 
-      {callback_pid,count,transaction,max_results} when count <= max_results -> send(callback_pid,state);{callback_pid,count,nil,max_results} 
-      {callback_pid,count,transaction,max_results} when count > max_results -> send(callback_pid,{:max_count_reached, state}); throw(:max_count_reached)
+      {callback_pid,count,transaction,:unlimited,_} -> 
+        send(callback_pid,{transaction,count}); {callback_pid,count,nil,max_results,nil} 
+      {callback_pid,count,transaction,max_results,_} when count <= max_results -> 
+        send(callback_pid,{transaction,count}); {callback_pid,count,nil,max_results,nil} 
+      {callback_pid,count,transaction,max_results,_} when count > max_results -> 
+        send(callback_pid,{:max_count_reached, state}); throw(:max_count_reached)
     end
   end
 
@@ -91,8 +92,69 @@ defmodule SaxTransactionSearch  do
   #end
 
   #def sax_event_handler({:characters, value}, %SaxState{element_acc: element_acc} = state) do
-  #  %{state | element_acc: element_acc <> to_string(value)}
-  #end
+  
+  def sax_event_handler({:characters, value},  state = {callback_pid,count, transaction, max_results, lastTag} ) do
+    
+    newstate = case lastTag do 
+
+
+    "Response" -> put_in transaction[:contact].contact_id, 2 
+    "Id" ->  put_in transaction[:contact].contact_id, 2 
+    _ -> transaction
+    #"Status" ->
+    #"ProviderName" ->
+    #"DateTimeUTC" ->
+    #"BankTransactions" ->
+    #"Contact" ->
+    #"ContactID" ->
+    #"Name" ->
+    #"Date" ->
+    #"Status" ->
+    #"LineAmountTypes" ->
+    #"SubTotal" ->
+    #"TotalTax" ->
+    #"Total" ->
+    #"UpdatedDateUTC" ->
+    #"CurrencyCode" ->
+    #"BankTransactionID" ->
+    #"BankAccount" ->
+    #"AccountID" ->
+    #"Name" ->
+    #"Type" ->
+    #"IsReconciled" ->
+    #"HasAttachments" ->
+    #"Contact" ->
+    #"ContactID" ->
+    #"Name" ->
+    #"Date" ->
+    #"Status" ->
+    #"LineAmountTypes" ->
+    #"SubTotal" ->
+    #"TotalTax" ->
+    #"Total" ->
+    #"UpdatedDateUTC" ->
+    #"CurrencyCode" ->
+    #"BankTransactionID" ->
+    #"BankAccount" ->
+    #"AccountID" ->
+    #"Name" ->
+    #"Type" ->
+    #"IsReconciled" ->
+    #"HasAttachments" ->
+
+
+
+
+
+
+
+
+    end
+    
+    #%{state | element_acc: element_acc <> to_string(value)}
+    IO.puts "lasttag - #{lastTag} - characters - #{value}"
+    state
+  end
 
 #  def sax_event_handler({:endElement, _, 'title', _}, state) do
 #    %{state | title: state.element_acc}
