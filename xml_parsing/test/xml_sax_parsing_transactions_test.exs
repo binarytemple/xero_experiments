@@ -8,16 +8,19 @@ use ExUnit.Case
   test "parsing the title out" do
 
   p = self()
-    task = Task.async(fn -> SaxTransactionSearch.run(@sample_2_transactions,p,:unlimited) end)
+    #task = Task.async(fn -> SaxTransactionSearch.run(@sample_2_transactions,p,:unlimited) end)
+    SaxTransactionSearch.run(@sample_2_transactions,p,1)
 
-  receive do 
-  x ->
-    IO.puts :stderr, (inspect x)
-  after
-  4000 ->
-      IO.puts :stderr, "No message in 4 seconds"
+  res = receive do 
+      state  ->
+      IO.puts :stderr, "got state #{inspect state}" ; {:ok, state}
+    after
+    4000 ->
+    IO.puts :stderr, "No message in 4 seconds" ; {:error, :timeout}
   end
-  Task.await(task)
+
+  #Task.await(task)
+  IO.puts "result - #{inspect res}"
   assert 1 == 1
   end
 

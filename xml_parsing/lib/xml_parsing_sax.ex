@@ -88,9 +88,9 @@ defmodule SaxTransactionSearch  do
     #send(output_pid, ":endElement, 'BankTransaction' #{data} ")
     #{output_pid}
     case state do 
-      {callback_pid,count,transaction,:unlimited} -> send(callback_pid,transaction); {callback_pid,count,transaction,:unlimited} 
-      {callback_pid,count,transaction,max_results} when count < max_results -> send(callback_pid,transaction);{callback_pid,count,transaction,:unlimited} 
-      {callback_pid,count,transaction,max_results} when count >= max_results -> throw(:max_count_reached)
+      {callback_pid,count,transaction,:unlimited} -> send(callback_pid,state); {callback_pid,count,nil,:unlimited} 
+      {callback_pid,count,transaction,max_results} when count <= max_results -> send(callback_pid,state);{callback_pid,count,nil,max_results} 
+      {callback_pid,count,transaction,max_results} when count > max_results -> send(callback_pid,{:max_count_reached, state}); throw(:max_count_reached)
     end
   end
 
