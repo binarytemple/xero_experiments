@@ -28,7 +28,7 @@ defmodule XmlParsingTest do
     { xml, _rest } = :xmerl_scan.string(:erlang.bitstring_to_list(sample_xml))
     #IO.puts inspect {xml,_rest}
     [ title_element ] = :xmerl_xpath.string('/html/head/title', xml)
-    #IO.puts inspect {title_element}
+    IO.puts inspect {title_element}
     [ title_element ] = :xmerl_xpath.string('/html/head/title', xml)
     [ title_text ] = xmlElement(title_element, :content)
     #IO.puts inspect {title_text}
