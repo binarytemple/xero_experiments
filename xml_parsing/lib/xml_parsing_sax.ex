@@ -29,7 +29,7 @@ defmodule SaxTransactionSearch  do
                         &sax_event_handler/2, 
                         [{:continuation_function, &continue_file/2, c_state}])
     catch
-      :max_count_reached -> {:ok}
+      :max_count_reached -> {:max_count_reached}
       other -> {:error, other}
     after 
       :ok = File.close(handle); {:ok}
@@ -58,24 +58,7 @@ defmodule SaxTransactionSearch  do
   
   def sax_event_handler({:startElement, _, 'BankTransaction', _, _}, {callback_pid,count,transaction,max_results} = state) do
     IO.puts "Hit BankTransaction #{inspect state } "
-    #%SaxState{}
-    #%{state| :transaction => bankTransaction() }
-    #Application.start(:iex)
-    #require IEx
-    #IEx.CLI.start
-    #IEx.pry
-    #v1=Map.put(state, :transaction, %BankTransaction{})
-    #IO.puts "v1: #{inspect v1}" 
- 
-    #v1=Map.update(state, :count, 0, &(&1 + 1))
-    nc=count + 1  
-    {callback_pid,nc,transaction,max_results}  
-    #IO.puts "v1: #{inspect v1}" 
-    #v1 
-    #$v1
-    #
-    #
-    #
+    {callback_pid, 1 + count  ,transaction,max_results}  
   end
 
   def sax_event_handler({:endElement, _, 'BankTransaction', _}, state ) do
