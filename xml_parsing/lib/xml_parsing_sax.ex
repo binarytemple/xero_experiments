@@ -111,8 +111,6 @@ defmodule SaxTransactionSearch  do
         send(callback_pid,state) ; throw(:max_count_reached)
       _ -> 
             IO.puts "NO-MATCH"; state
-
- 
     end
   end
 
@@ -149,37 +147,35 @@ defmodule SaxTransactionSearch  do
   end
   
   
+	
+  
+  
   def sax_event_handler({:endElement, [], tag, []}, state) do 
 	  
 	  IO.puts "sax_event_handler endElement tag"
 	  {callback_pid,count, transaction, max_results, tag_stack, text} = state
 
 	  trans2 = case tag_stack do 
-		   [:bank_transaction] -> transaction
-		   [:contact, :bank_transaction] -> transaction
-		   [:bank_account, :bank_transaction] -> transaction
+		   [:bank_transaction] -> transform_bank_transaction(tag,transaction,text)
+		   [:contact, :bank_transaction] -> transform_bank_transaction_contact(tag,transaction,text)
+		   [:bank_account, :bank_transaction] -> transform_bank_transaction_bank_account(tag,transaction,text)
 		  _ -> transaction
 	  end
 	  
-	  state2 = {callback_pid,count, trans2, max_results, tag_stack, text}
-	  
-	  IO.puts("#{inspect state2}")
-	  
+	  # notice we clear the text 
+	  state2 = {callback_pid,count, trans2, max_results, tag_stack, ""}
+	  IO.puts("state 2 #{inspect state2}")
 	  state2
-#    # IO.puts "reached catch-all sax_event_handler #{inspect state}"
- #    IO.puts "reached catch-all sax_event_handler #{inspect event} #{inspect state}  "
-
+	  #IO.puts "reached catch-all sax_event_handler #{inspect state}"
+	  #IO.puts "reached catch-all sax_event_handler #{inspect event} #{inspect state}  "
   end
   
   def sax_event_handler({:characters, value},  state ) do
-    {callback_pid,count, transaction, max_results, tag_stack, text} = state
-
-	
-	
-	
-    state
+    {callback_pid,count, transaction, max_results, tag_stack, text } = state
+	IO.puts("sax_event_handler({:characters, value} - #{inspect {:characters, value}}")
+	{callback_pid,count, transaction, max_results, tag_stack, text <> to_string(value) }
+	# {callback_pid,count, transaction, max_results, tag_stack, "bollox" }
   end
-  
   
   def sax_event_handler(event, state) do 
 #    IO.puts "reached catch-all sax_event_handler #{inspect state}"
@@ -187,6 +183,33 @@ defmodule SaxTransactionSearch  do
     state
   end
   
+	def transform_bank_transaction(tag,transaction,text) do 
+		IO.puts("transform_bank_transaction #{inspect {tag,transaction,text} }")
+	
+		case tag do 
+			'Date' -> put_in transaction[:total_tax], "fooo"
+			'Status' -> put_in transaction[:status], text
+			'LineAmountTypes' -> put_in transaction[:line_amount_types], text
+			'SubTotal' -> put_in transaction[:sub_total], text
+			'TotalTax' -> put_in transaction[:total_tax], text
+			'Total' -> put_in transaction[:total], text
+			'UpdatedDateUTC' -> put_in transaction[:updated_date_utc], text
+			'CurrencyCode' -> put_in transaction[:currency_code], text
+			'BankTransactionID' -> put_in transaction[:bank_transaction_id], text
+			'Type' -> put_in transaction[:type], text
+			'IsReconciled' -> put_in transaction[:is_reconciled], text
+			'HasAttachments' -> put_in transaction[:has_attachments], text
+			_ -> transaction			
+		end
+	end
+
+	def transform_bank_transaction_contact(tag,transaction,text) do
+		transaction
+	end
+
+	def transform_bank_transaction_bank_account(tag,transaction,text) do 
+		transaction
+	end
   
 end
 
